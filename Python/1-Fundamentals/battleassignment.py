@@ -3,7 +3,7 @@ import time
 # Construct a base class
 
 
-class ConstructHero:
+class ConstructEntity:
 
     def __init__(self, hitpoints, attack_power, name):
         self.hitpoints = int(hitpoints)
@@ -25,7 +25,7 @@ class ConstructHero:
 def character_select():
 
     character = ""
-    while character != "1" and character != "2" and character != "3" and character.lower() != 'wizard' and character.lower() != 'elf' and character.lower() != 'human':
+    while character not in ('1', '2', '3', "wizard", "elf", "human"):
         character = input(
             "Choose your Hero:\n 1) Wizard\n 2) Elf\n 3) Human\n").lower()
     return character
@@ -35,14 +35,14 @@ def character_select():
 
 def construct_hero(character_selected):
     hero = ""
-    if character_selected == "1" or character_selected.lower() == 'wizard':
-        hero = ConstructHero(70, 150, "Wizard")
+    if character_selected in ('1', "wizard"):
+        hero = ConstructEntity(70, 150, "Wizard")
 
-    if character_selected == "2" or character_selected.lower() == 'elf':
-        hero = ConstructHero(100, 100, "Elf")
+    if character_selected in ('2', "elf"):
+        hero = ConstructEntity(100, 100, "Elf")
 
-    if character_selected == "3" or character_selected.lower() == 'human':
-        hero = ConstructHero(150, 20, "Human")
+    if character_selected in ('3', "human"):
+        hero = ConstructEntity(150, 20, "Human")
 
     print(
         f"You've selected: {hero.get_name()}\nHealth: {hero.total_HP()}\nDamage: {hero.damage()}\n")
@@ -50,7 +50,7 @@ def construct_hero(character_selected):
 
 
 # Spawn ENEMY
-ENEMY = ConstructHero(300, 50, "Dragon")
+ENEMY = ConstructEntity(300, 50, "Dragon")
 
 # Spawn CHAMPION
 CHAMPION = construct_hero(character_select())
