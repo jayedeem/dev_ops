@@ -1,4 +1,3 @@
-
 import time
 # Construct a base class
 
@@ -23,8 +22,8 @@ class ConstructEntity:
 
 
 def character_select():
-
     character = ""
+
     while character not in ('1', '2', '3', "wizard", "elf", "human"):
         character = input(
             "Choose your Hero:\n 1) Wizard\n 2) Elf\n 3) Human\n").lower()
