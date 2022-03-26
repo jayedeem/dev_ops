@@ -2,7 +2,7 @@ class BankOptions:
 
     def __init__(self, balance=0, name=""):
         self.balance = balance
-        self.name = name
+        self.name = str(name)
 
     def show_balance(self):
         return self.balance
