@@ -7,7 +7,7 @@ class ATMOptions:
     '''
     # init construct
 
-    def __init__(self, balance=0.0, name="") -> None:
+    def __init__(self, balance: float = 0.0, name: str = "") -> None:
         self.balance = balance
         self.name = name
 

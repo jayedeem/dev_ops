@@ -1,26 +1,76 @@
-from donations_pkg.homepage import show_homepage
-from donations_pkg.user import login
+"""Import UI and user logic"""
+import os
+from donations_pkg import homepage_logic, user_logic
 
 database = {"admin": "password123"}
 
 donations = []
+donors = None
+authorized_user = None
+TOTAL = 0.0
 
-authorized_user = ""
 
-if not authorized_user:
-    show_homepage()
-    print("You must be logged in to donate")
-else:
-    print(f"Logged in as {authorized_user}")
+def init():
+    homepage_logic.DonationMenu.show_homepage()
 
-# available_options = {1: login,
-#                      2: "TODO Write Register Functionality",
-#                      3: "TODO Write Donate Functionality",
-#                      4: "TODO Write Show Donation Functionality",
-#                      5: "Goodbye"}
 
-user_options = int(input("Choose an option: "))
-if user_options == 1:
-    authorized_user = input("Enter username: ")
-    authorized_user_password = input("Enter password: ")
-    login(database, authorized_user, authorized_user_password)
+while True:
+    init()
+    if not authorized_user:
+        print("You Must Be Logged in to donate")
+    user_input = input("Choose an option: ")
+
+    if user_input == "1":
+        # Login
+        user_login = input("Enter username: ")
+        user_password = input("Enter Password: ")
+        # instaniate new user from here
+        authorized_user = user_logic.HandleUser(
+            user_login, user_password, database)
+        authorized_user.login()
+
+    if user_input == "2":
+        # Handle User Registration
+        print("Registering new user...please proceed")
+        name_to_register = input("Enter username: ")
+        password_to_register = input("Enter password: ")
+        authorized_user = user_logic.HandleUser(
+            name_to_register, password_to_register, database)
+
+        if authorized_user:
+            authorized_user.register()
+
+    if user_input == "3":
+        # Donations
+        if authorized_user:
+            amount = float(input("Enter amount to donate: "))
+            donors = homepage_logic.DonationMenu(
+                username=authorized_user.username)
+            if amount == 0:
+                print("Amount must be greater than $0")
+
+            else:
+                TOTAL += donors.donate(amount)
+                donations.append(donors.donation_to_str())
+
+        else:
+            print("Please login to donate")
+
+    if user_input == "4":
+        # Show Donations
+        if authorized_user is None:
+            print("Please login to see donations!")
+
+        if authorized_user and len(donations) != 0:
+            print("---ALL DONATIONS----")
+            for donation in donations:
+                print(donation)
+            print(f"Total=${TOTAL}")
+
+        if authorized_user and len(donations) == 0:
+            print("Currently, there are no donations!")
+
+    if user_input == "5":
+        # Die
+        os.system("clear")
+        break
