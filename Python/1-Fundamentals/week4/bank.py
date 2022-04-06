@@ -52,10 +52,8 @@ class BankUser(User):
     def __init__(self, name: str, pin: int, password: str) -> None:
         super().__init__(name, pin, password)
         self.balance: float = 0.00
-
         self.new_user_object = dict(self.user_object())
         self.new_user_object.update({"balance": self.balance})
-    
 
     def validate_pin(self) -> bool:
         try:
@@ -63,10 +61,7 @@ class BankUser(User):
                 input("Please enter your pin: "))
             if pin_to_authenticate != self.pin:
                 print("Incorrect PIN. Transaction cancelled")
-                return False
-            else:
-                return True
-
+                return None
         except ValueError:
             print("Try again!")
 
@@ -76,20 +71,16 @@ class BankUser(User):
                 "Please enter your password: ")
             if password_to_authenticate != self.new_user_object["password"]:
                 print("Incorrect Password. Transaction cancelled")
-                return False
+                return None
             
-            return True
-
         except ValueError:
             print("Try again!")
 
-    def validate_amount(self, amount: float) -> bool:
+    def validate_amount(self, amount: float) -> None:
         try:
             if amount < 0:
                 print("Invalid amount")
-                return False
-        
-            return True
+                return None
 
         except ValueError:
             print("Please enter a valid amount!")
@@ -100,23 +91,28 @@ class BankUser(User):
     def show_balance(self) -> None:
         print(f"{self.new_user_object['name']} has an account balance of: {self.new_user_object['balance']}")
 
-    def deposit(self, amount: float) -> None:
+    def deposit(self, amount: float, hold:bool) -> None:
+        self.on_hold(hold)
         self.new_user_object['balance'] += amount
         self.show_balance()
+        return None
+        
 
-    def withdraw(self, amount: float) -> None:
-        if self.validate_amount(amount):
+    def withdraw(self, amount: float, hold: bool) -> None:
+          self.on_hold(hold)
+          if self.validate_amount(amount):
+            self.new_user_object['balance'] -= amount
+            self.show_balance_after_transaction(self.new_user_object['name'], self.new_user_object['balance'])
 
-          self.new_user_object['balance'] -= amount
-          self.show_balance_after_transaction(self.new_user_object['name'], self.new_user_object['balance'])
-
-    def transfer_money(self, other_user: User, amount: float) -> None:
+    def transfer_money(self, other_user: User, amount: float, hold: bool) -> None:
         print(f"{self.new_user_object['name']} is transferring money to {other_user.name}: {amount}")
-
-        if self.validate_pin() and self.validate_amount(amount):
-            if amount > self.new_user_object['balance']:
-                print("Insufficient funds to transfer")
-                return None
+        self.on_hold(hold)
+        self.validate_pin()
+        self.validate_amount(amount)
+        
+        if amount > self.new_user_object['balance']:
+            print("Insufficient funds to transfer")
+            return None
 
         self.new_user_object['balance'] -= amount
         other_user.balance += amount
@@ -124,35 +120,47 @@ class BankUser(User):
         self.show_balance_after_transaction(
             other_user.name, other_user.balance)
 
-    def request_money(self, other_user: User, amount: float) -> None:
-        print(f"You are requesting money from {other_user.name}: {amount}")
+    def request_money(self, other_user: User, amount: float, hold: bool) -> None:
+        print(f"{self.new_user_object['name']} is requesting money from {other_user.name}: {amount}")
         print("User authentication required...")
+        self.validate_pin()
+        self.validate_password()
+        self.on_hold(hold)
+        self.validate_amount(amount)
     
-        if self.validate_pin() and self.validate_password() and self.validate_amount(amount):
-            if amount > other_user.balance:
-              print(f"{other_user.name} has insufficient funds to widthdraw")
-              return None
+        if amount > other_user.balance:
+          print(f"{other_user.name} has insufficient funds to widthdraw")
+          return None
 
-            self.new_user_object['balance'] += amount
-            other_user.balance -= amount
-            self.show_balance_after_transaction(self.new_user_object['name'], self.new_user_object['balance'])
-            self.show_balance_after_transaction(
-                other_user.name, other_user.balance)
-            return None
+        self.new_user_object['balance'] += amount
+        other_user.balance -= amount
+        self.show_balance_after_transaction(self.new_user_object['name'], self.new_user_object['balance'])
+        self.show_balance_after_transaction(
+            other_user.name, other_user.balance)
+        return None
+      
+    def on_hold(self, isHold:bool=True) -> bool:
+        if isHold:
+            print("Transaction on hold")
+            return True
+        else:
+            print("Transaction completed")
+            return False
 
 
-bob = BankUser("Bob", 1234, "password")
+
+bob = BankUser(name="Bob", pin=1234, password="password")
 bob.show_balance()
-bob.deposit(1222)
-bob.show_balance()
+bob.deposit(amount=1222, hold=False)
+# bob.show_balance()
 
 alice = BankUser("Alice", 4321, "password123")
-alice.show_balance()
-alice.deposit(100000.00)
-alice.show_balance()
-alice.request_money(bob, 123)
-alice.transfer_money(bob, 1234.00)
-bob.request_money(alice, 12.00)
-bob.transfer_money(alice, 123.00)
-bob.change_name("Bdddb")
-bob.change_pin(3334)
+# alice.show_balance()
+alice.deposit(amount=1000.00, hold=False)
+# alice.show_balance()
+alice.request_money(other_user=bob, amount=123, hold=False)
+alice.transfer_money(other_user=bob, amount=14.00, hold=False)
+bob.request_money(other_user=alice, amount=12.00, hold=False)
+bob.transfer_money(other_user=alice, amount=12.00, hold=False)
+# bob.change_name("Bdddb")
+# bob.change_pin(3334)
