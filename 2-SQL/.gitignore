@@ -130,3 +130,4 @@ tmp
 
 # Jetbrains
 .idea/
+.vscode
